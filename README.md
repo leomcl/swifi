@@ -18,7 +18,7 @@ cargo install --git https://github.com/leomcl/swifi
 
 1. Clone repo
 ```
-git clone [https://github.com/leomclaughlin/swifi.git](https://github.com/leomclaughlin/swifi.git)
+git clone https://github.com/leomcl/swifi.git
 cd swifi
 ```
 2. Build and install
