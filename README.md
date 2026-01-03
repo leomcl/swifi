@@ -11,7 +11,7 @@ Faster, easier and cooler than web alternatives.
 If you have Rust installed I think you can run
 
 ```
-cargo install --git [https://github.com/leomclaughlin/swifi](https://github.com/leomclaughlin/swifi)
+cargo install --git https://github.com/leomcl/swifi
 ```
 
 ### Option 2 - from source
