@@ -1,8 +1,50 @@
 [package]
 name = "swifi"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
+authors = ["Leo <leomcl>"]
+default-run = "swifi"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+todo = "warn"
+dbg_macro = "warn"
+unimplemented = "warn"
+unreachable = "warn"
+wildcard_imports = "warn"
+missing_docs_in_private_items = "warn"
 
 [dependencies]
-clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0.100"
+clap = { version = "4.5.54", features = ["derive"] }
 speedtest-rs = "0.2.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+#TUI Deps
+tachyonfx = { version = "0.22.0", optional = true }
+ratatui = { version = "0.30.0", optional = true }
+
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
+cargo = "0.93.0"
+
+[[bin]]
+name = "swifi"
+path = "src/bin/swifi_cli.rs"
+
+[[bin]]
+name = "swifi-tui"
+path = "src/bin/swifi_tui.rs"
+required-features = ["tui"]
+
+[features]
+tui = ["ratatui", "tachyonfx"]
+

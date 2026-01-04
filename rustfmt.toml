@@ -1,0 +1,9 @@
+edition = "2024"
+
+# Formatting options
+tab_spaces = 8 # From Linux kernel coding style
+newline_style = "Unix"
+max_width = 80
+
+# Import settings (stable)
+reorder_imports = true
