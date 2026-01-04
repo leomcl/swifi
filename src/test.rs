@@ -5,7 +5,6 @@ use {
     },
     anyhow::{Result, bail},
     speedtest_rs::{speedtest, speedtest_config::SpeedTestConfig},
-    std::io::{self, Write},
     tracing::{error, info, warn},
 };
 
@@ -37,11 +36,15 @@ impl Test {
     /// # Errors
     /// Returns an error if the speedtest configuration cannot be retrieved
     /// or if the network test fails.
-    pub fn run(&self) -> Result<()> {
+    pub fn run<F>(&self, progress_callback: F) -> Result<()>
+    where 
+        F: Fn() + Send + Copy + Sync + 'static,
+    {
+    
         let mut speed_config = speedtest::get_configuration()
             .map_err(|e| anyhow::anyhow!("Failed to retrieve speedtest configuration: {e:?}"))?;
 
-        self.run_test(&mut speed_config)
+        self.run_test(&mut speed_config, progress_callback)
     }
 
     /// Check if download test should be performed.
@@ -59,7 +62,10 @@ impl Test {
 
     /// # Errors
     /// Will return `Err` if either the download or upload test fails.
-    fn run_test(&self, config: &mut SpeedTestConfig) -> Result<()> {
+    fn run_test<F>(&self, config: &mut SpeedTestConfig, progress_callback: F) -> Result<()> 
+    where 
+        F: Fn() + Send + Copy + Sync + 'static, 
+    {
         let server = self.server.to_speedtest_server();
         info!(
             "Testing connection on server: {} ({})",
@@ -67,11 +73,11 @@ impl Test {
         );
 
         if self.should_download() {
-            self.run_download_test(config)?;
+            self.run_download_test(config, progress_callback)?;
         }
 
         if self.should_upload() {
-            self.run_upload_test(config)?;
+            self.run_upload_test(config, progress_callback)?;
         }
 
         Ok(())
@@ -79,22 +85,29 @@ impl Test {
 
     /// # Errors
     /// Will return `Err` if the download test fails.
-    fn run_download_test(&self, config: &mut SpeedTestConfig) -> Result<()> {
+    pub fn run_download_test<F>(
+        &self, 
+        config: &mut SpeedTestConfig, 
+        progress_callback: F
+    ) -> Result<()> 
+    where 
+        F: Fn()  + Send + Sync + 'static,
+    {
         let server = self.server.to_speedtest_server();
         info!("Performing download speed test...");
-        // todo seperate progress callback (added print for mean time will seprate in next pr)
+
         let measurement = speedtest::test_download_with_progress_and_config(
             &server,
-            || {
-                print!("#");
-                if let Err(e) = io::stdout().flush() {
-                    error!("Failed to flush stdout: {e}");
-                }
-            },
+            progress_callback,
             config,
         )
         .map_err(|e| anyhow::anyhow!("Download speed test failed: {e:?}"))?;
+
+        // NOTE: Newline is to make log not be on same line as progress hashes in cli mode 
+        // This will most likely need to be removed when we make tuis to do this we will need to now return measurement data instead of logging
+        // Then handle display elsewhere
         println!();
+
         let download_mbps = Self::calculate_mbps(measurement.bps_f64());
         info!("Download Speed: {download_mbps:.2} Mbps");
         Ok(())
@@ -102,18 +115,16 @@ impl Test {
 
     /// # Errors
     /// Will return `Err` if the upload test fails.
-    fn run_upload_test(&self, config: &SpeedTestConfig) -> Result<()> {
+    fn run_upload_test<F>(&self, config: &SpeedTestConfig, progress_callback: F) -> Result<()> 
+    where 
+        F: Fn() + Send + Copy + Sync + 'static,
+    {
         let server = self.server.to_speedtest_server();
         info!("Performing upload speed test...");
         // todo seperate progress callback (added print for mean time will seprate in next pr)
         let measurement = speedtest::test_upload_with_progress_and_config(
             &server,
-            || {
-                print!("#");
-                if let Err(e) = io::stdout().flush() {
-                    error!("Failed to flush stdout: {e}");
-                }
-            },
+            progress_callback,
             config,
         )
         .map_err(|e| anyhow::anyhow!("Upload speed test failed: {e:?}"))?;
@@ -135,7 +146,10 @@ impl Test {
     ///
     /// # Errors
     /// Will return `Err` if no servers are available or all tests fail.
-    pub fn run_config(config: &Config) -> Result<()> {
+    pub fn execute<F>(config: &Config, progress_callback: F) -> Result<()> 
+    where 
+        F: Fn() + Send + Copy + Sync + 'static,
+    {
         let servers = ServerList::select_server(config.server_id().cloned())?;
 
         if servers.is_empty() {
@@ -145,7 +159,7 @@ impl Test {
 
         for (index, server) in servers.iter().enumerate() {
             let test = Self::new(server.clone(), config.direction());
-            match test.run() {
+            match test.run(progress_callback) {
                 Ok(()) => return Ok(()),
                 Err(e) => {
                     error!("Error with server {}: {}", server.id, e);
