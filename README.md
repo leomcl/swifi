@@ -44,7 +44,7 @@ swifi --help
 
 ### Testing
 
-Run all tests:
+Run all tests (ignores network tests):
 ```bash
 cargo test
 ```
@@ -59,30 +59,14 @@ Run integration tests only:
 cargo test --test cli_flags
 ```
 
+Run all including network tests
+```bash
+cargo test -- --include-ignored
+```
+
 ### Linting
 
 Check for issues:
 ```bash
 cargo clippy --all-targets --all-features
-```
-
-**Note:** that we have used the following vscode settings.json which follow the Linux 
-kernel style guide of 8 spaces per tab key. 
-
-```json
-{
-        "editor.tabSize": 8,
-        "editor.insertSpaces": true,
-        "editor.detectIndentation": false,
-        "editor.rulers": [80],
-        "editor.wordWrapColumn": 80,
-        "[rust]": {
-                "editor.defaultFormatter": "rust-lang.rust-analyzer",
-                "editor.formatOnSave": true,
-                "editor.tabSize": 8,
-                "editor.insertSpaces": true,
-                "editor.detectIndentation": false,
-                "editor.rulers": [80]
-        }
-}
 ```
