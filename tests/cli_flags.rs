@@ -1,3 +1,5 @@
+//! Integration tests for CLI flags.
+
 use {
     assert_cmd::Command,
     predicates::{prelude::PredicateBooleanExt, str::contains},

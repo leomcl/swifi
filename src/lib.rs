@@ -2,15 +2,12 @@
 //!
 //! This crate provides CLI tools and libraries for testing `WiFi` download and upload speeds.
 
-/// Command-line interface module.
 mod cli;
-/// Module for server funcs.
 mod server;
-/// Test module for speed testing funcs.
-mod test;
+mod speed_test;
 
 pub use {
-    cli::{CliArgs, Config, ConfigBuilder},
+    cli::{AppConfig, AppConfigBuilder, CliArgs},
     server::{Server, ServerList},
-    test::{Test, TestDirection},
+    speed_test::{Direction, SpeedMeasurement, SpeedTest, SpeedTestResult},
 };

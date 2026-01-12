@@ -10,6 +10,9 @@ keywords = ["wifi", "speed", "test", "network"]
 categories = ["command-line-utilities", "network-programming"]
 default-run = "swifi"
 
+[lints.rust]
+missing_docs = "warn"
+
 [lints.clippy]
 all = { level = "warn", priority = -1 }
 # pedantic = { level = "warn", priority = -1 }
@@ -23,7 +26,7 @@ dbg_macro = "warn"
 unimplemented = "warn"
 unreachable = "warn"
 wildcard_imports = "warn"
-missing_docs_in_private_items = "warn"
+missing_docs_in_private_items = "allow"
 multiple_crate_versions = "allow"
 
 [dependencies]

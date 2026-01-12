@@ -4,26 +4,28 @@ use {
     std::{fmt::Write as _, sync::Arc},
 };
 
-/// TODO: investigate TUI handling of longer sponsor/name strings
 const MAX_SPONSOR_LENGTH: usize = 20;
-/// Should these be the same?
 const MAX_NAME_LENGTH: usize = 20;
-/// Number of closest servers to return when listing.
 const TOP_X_NUM_SERVERS: usize = 10;
-/// Number of servers to try when not specified.
 const DEFAULT_SERVER_COUNT: usize = 3;
 
+/// Represents a speed test server with its metadata.
 #[derive(Debug, Clone)]
 pub struct Server {
+    /// Unique identifier for the server.
     pub id: u32,
+    /// The sponsor/provider of the server.
     pub sponsor: Arc<str>,
+    /// The name of the server location.
     pub name: Arc<str>,
+    /// Distance from the client in kilometers.
     pub distance_km: f32,
+    /// The URL used for testing.
     pub url: String,
 }
 
 impl Server {
-    /// Convert a Server to a `SpeedTestServer` with required fields
+    /// Converts this `Server` into the `speedtest_rs` crate's server type.
     #[must_use]
     pub fn to_speedtest_server(&self) -> speedtest_rs::speedtest::SpeedTestServer {
         speedtest_rs::speedtest::SpeedTestServer {
@@ -52,7 +54,6 @@ impl std::fmt::Display for Server {
     }
 }
 
-/// Truncate text to `max_len`, adding "..." if truncated
 fn ellipsize(text: &str, max_len: usize) -> String {
     match text.len().cmp(&max_len) {
         std::cmp::Ordering::Greater => {
@@ -62,12 +63,14 @@ fn ellipsize(text: &str, max_len: usize) -> String {
     }
 }
 
+/// A collection of available speed test servers.
 pub struct ServerList {
+    /// The list of servers.
     pub servers: Vec<Server>,
 }
 
 impl ServerList {
-    /// Format the server list as a table string.
+    /// Formats the list of servers as a human-readable table string.
     #[must_use]
     pub fn format_table(&self) -> String {
         let mut output = String::new();
@@ -160,7 +163,6 @@ mod tests {
     #[test]
     fn test_ellipsize() {
         assert_eq!(ellipsize("short", 10), "short");
-        // "a very long" has length 11, max_len=10, so we take first 7 chars "a very " + "..."
         assert_eq!(ellipsize("a very long sponsor name", 10), "a very ...");
     }
 
@@ -189,10 +191,7 @@ mod tests {
 
     #[test]
     fn test_select_server_valid_parse() {
-        // This test verifies that parsing a valid server ID doesn't panic
-        // Network call may fail in CI, so we only test the parse path
         let result = ServerList::select_server(Some("12345".to_string()));
-        // Either succeeds or fails with network error, not parse error
         if let Err(e) = result {
             let msg = e.to_string();
             assert!(!msg.contains("valid number"));

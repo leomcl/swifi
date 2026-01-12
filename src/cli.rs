@@ -1,4 +1,4 @@
-use {crate::test, clap::Parser};
+use {crate::speed_test, clap::Parser};
 
 /// A CLI tool for testing wifi download and upload speeds.
 #[derive(Parser, Debug)]
@@ -21,48 +21,44 @@ pub struct CliArgs {
     pub up: bool,
 }
 
+/// Configuration for the application, defining parameters for the speed test.
 #[derive(Debug, Default)]
-#[allow(clippy::missing_docs_in_private_items)]
-pub struct Config {
+pub struct AppConfig {
     list: bool,
     server: Option<String>,
-    direction: test::TestDirection,
+    direction: speed_test::Direction,
 }
 
-impl Config {
-    /// Check if the config is set to list servers.
+impl AppConfig {
+    /// Returns true if the user requested to list available servers.
     #[must_use]
     pub const fn has_list(&self) -> bool {
         self.list
     }
 
-    /// Get the server ID if specified.
+    /// Returns the specific server ID to test against, if requested.
     #[must_use]
     pub const fn server_id(&self) -> Option<&String> {
         self.server.as_ref()
     }
 
-    /// Get the test direction.
+    /// Returns the direction of the test (Download, Upload, or Both).
     #[must_use]
-    pub const fn direction(&self) -> test::TestDirection {
+    pub const fn direction(&self) -> speed_test::Direction {
         self.direction
     }
 }
 
-/// Builder for `Config` from CLI arguments.
-pub struct ConfigBuilder {
-    /// Whether to list servers
+/// Builder for creating an `AppConfig` from CLI arguments.
+pub struct AppConfigBuilder {
     list: bool,
-    /// Optional server ID to use
     server: Option<String>,
-    /// Whether to run download test
     down: bool,
-    /// Whether to run upload test
     up: bool,
 }
 
-impl ConfigBuilder {
-    /// Create a new `ConfigBuilder` from parsed CLI arguments.
+impl AppConfigBuilder {
+    /// Creates a new builder from the parsed command-line arguments.
     #[must_use]
     pub fn from_args(args: CliArgs) -> Self {
         Self {
@@ -73,15 +69,15 @@ impl ConfigBuilder {
         }
     }
 
-    /// Build the final `Config` from the builder.
+    /// Consumes the builder and returns the final `AppConfig`.
     #[must_use]
-    pub fn build(self) -> Config {
+    pub fn build(self) -> AppConfig {
         let direction = match (self.down, self.up) {
-            (true, false) => test::TestDirection::Download,
-            (false, true) => test::TestDirection::Upload,
-            (true, true) | (false, false) => test::TestDirection::Both,
+            (true, false) => speed_test::Direction::Download,
+            (false, true) => speed_test::Direction::Upload,
+            (true, true) | (false, false) => speed_test::Direction::Both,
         };
-        Config {
+        AppConfig {
             list: self.list,
             server: self.server,
             direction,
