@@ -2,6 +2,8 @@
 
 **Swifi** is a lightweight CLI tool to check wifi speeds.
 
+![Swifi Demo](demo.gif)
+
 Faster __(pending benchmarking)__, easier, and cooler than web alternatives.
 
 ## Quick Start
